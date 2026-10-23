@@ -15,13 +15,13 @@ displayed crystallographic model.
 2. Copy the complete `plugin-RINSE` folder from this repository into:
 
    ```text
-   C:\Program Files\Olex2-1.5\util\pyUtil\PluginLib
+   <Olex2 installation folder>\util\pyUtil\PluginLib
    ```
 
-   The resulting folder should be
-   `C:\Program Files\Olex2-1.5\util\pyUtil\PluginLib\plugin-RINSE`. Make sure
-   the plugin files are directly inside that folder (not inside an extra
-   nested `plugin-RINSE` folder).
+   For example, if Olex2 is installed in `D:\Apps\Olex2`, copy it to
+   `D:\Apps\Olex2\util\pyUtil\PluginLib\plugin-RINSE`. Make sure the plugin
+   files are directly inside that folder (not inside an extra nested
+   `plugin-RINSE` folder).
 3. Start Olex2 and open a model. If `rinse-descriptor` is not already
    available, the plugin will try to install it in Olex2's Python environment
    the first time it loads. If needed, install it manually from Olex2's main

@@ -6,7 +6,7 @@
     $+
     html.Snippet(GetVar(default_link),
     "value=Reload Plugin",
-    "onclick=py.run C:\Program Files\Olex2-1.5/util/pyUtil/PluginLib//plugin-RINSE/RINSE.py",
+    "onclick=py.run $GetVar(RINSE_plugin_path)\RINSE.py",
     )$-
 
     $+
@@ -18,7 +18,7 @@
     $+
     html.Snippet(GetVar(default_link),
     "value=Open Folder",
-    "onclick=shell C:\Program Files\Olex2-1.5/util/pyUtil/PluginLib//plugin-RINSE",
+    "onclick=shell $GetVar(RINSE_plugin_path)",
     )$-
 
 
