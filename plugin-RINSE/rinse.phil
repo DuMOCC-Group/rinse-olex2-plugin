@@ -1,0 +1,11 @@
+
+rinse{
+  gui{
+    location = 'tools'
+      .type = str
+      .help = The tab item where the RINSE GUI shall appear.
+    before = 'images'
+      .type = str
+      .help = The tool before which the RINSE GUI shall appear.
+    }
+}

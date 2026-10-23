@@ -1,0 +1,5 @@
+
+  p_name = RINSE
+  p_htm = RINSE
+  p_img = [("RINSE",'h1'), ("RINSE-Extras",'h3')]
+  p_scope = rinse

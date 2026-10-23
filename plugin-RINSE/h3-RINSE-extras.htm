@@ -1,0 +1,26 @@
+
+<!-- #include tool-h3 gui\blocks\tool-h3.htm;image=#image;colspan=1;1; -->
+<!-- #include tool-row-help gui/blocks/tool-row-help.htm;name=h3-RINSE_1; help_ext=RINSE_1;1; -->
+
+
+    $+
+    html.Snippet(GetVar(default_link),
+    "value=Reload Plugin",
+    "onclick=py.run C:\Program Files\Olex2-1.5/util/pyUtil/PluginLib//plugin-RINSE/RINSE.py",
+    )$-
+
+    $+
+    html.Snippet(GetVar(default_link),
+    "value=Settings",
+    "onclick=spy.EditParams(rinse)",
+    )$-
+
+    $+
+    html.Snippet(GetVar(default_link),
+    "value=Open Folder",
+    "onclick=shell C:\Program Files\Olex2-1.5/util/pyUtil/PluginLib//plugin-RINSE",
+    )$-
+
+
+
+<!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
