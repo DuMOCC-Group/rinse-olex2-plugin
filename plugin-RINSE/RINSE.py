@@ -1,5 +1,6 @@
 """Olex2 entry point for calculating the RINSE hash."""
 
+import json
 import importlib.metadata
 import importlib
 import os
@@ -149,7 +150,7 @@ class RINSE(PT):
     return report
 
   def calculate(self):
-    """Calculate and display the RINSE hash for Olex2's current model."""
+    """Calculate and display the RINSE descriptor and hash for the current model."""
     descriptor, descriptor_hash = self._get_rinse_functions()
 
     from refinement import FullMatrixRefine
@@ -158,10 +159,20 @@ class RINSE(PT):
     values = descriptor(xray_structure)
     rinse_hash = descriptor_hash(values)
 
+    from CifInfo import CifTools
+
+    cif_tools = CifTools()
+    cif_tools.cif_block['_rinse_descriptor'] = json.dumps(
+      values.tolist(),
+      separators=(',', ':'),
+      allow_nan=False,
+    )
+    cif_tools.cif_block['_rinse_hash'] = str(rinse_hash)
+
     OV.SetVar('RINSE_hash', rinse_hash)
     OV.SetVar(
       'RINSE_status',
-      "Updated automatically when the structure changes",
+      "Descriptor and hash will be included when the CIF is saved",
     )
     OV.UpdateHtml()
     print("RINSE hash: %s" % rinse_hash)

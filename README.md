@@ -54,10 +54,13 @@ displayed crystallographic model.
    This prints Olex2's Python version and whether `rinse-descriptor` and
    `cctbx-base` are installed in that runtime.
 
-The plugin calculates the hash automatically when a model is loaded or
-refined. To calculate it manually, run `spy.RINSE.calculate()` in Olex2's
-main console. The hash is printed in the console and displayed in the RINSE
-plugin panel. The plugin does not modify the model.
+The plugin calculates the descriptor and hash automatically when a model is
+loaded or refined. It stores them in the active CIF metadata as
+`_rinse_descriptor` (a JSON array of descriptor values) and `_rinse_hash`.
+Olex2 includes these data items when the CIF is saved. To calculate them
+manually, run `spy.RINSE.calculate()` in Olex2's main console. The hash is
+printed in the console and displayed in the RINSE plugin panel; the descriptor
+is stored in the CIF metadata.
 
 ## Development status
 
