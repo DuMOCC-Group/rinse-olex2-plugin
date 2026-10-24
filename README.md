@@ -37,8 +37,10 @@ displayed crystallographic model.
    If there is no `plugins.xld` file, create it and add the above text.
 4. Start Olex2 and open a model. If `rinse-descriptor` is not already
    available, the plugin will try to install it in Olex2's Python environment
-   the first time it loads. If needed, install it manually from Olex2's main
-   console:
+   the first time it loads. At startup, the plugin also checks PyPI for a newer
+   `rinse-descriptor` version and installs it automatically when available.
+   Restart Olex2 after an update so the new package code is loaded. If needed,
+   install it manually from Olex2's main console:
 
    ```text
    spy.pip('rinse-descriptor')
@@ -55,12 +57,15 @@ displayed crystallographic model.
    `cctbx-base` are installed in that runtime.
 
 The plugin calculates the descriptor and hash automatically when a model is
-loaded or refined. It stores them in the active CIF metadata as
-`_rinse_descriptor` (a JSON array of descriptor values) and `_rinse_hash`.
-Olex2 includes these data items when the CIF is saved. To calculate them
-manually, run `spy.RINSE.calculate()` in Olex2's main console. The hash is
-printed in the console and displayed in the RINSE plugin panel; the descriptor
-is stored in the CIF metadata.
+loaded or refined. It stores them in the active CIF metadata as a
+`_rinse_elements` loop (`_rinse_elements.index` and
+`_rinse_elements.value`), a `_rinse_parameters` loop (JSON-encoded parameter
+names and values, including the descriptor version and hash word count), and
+the `_rinse_hash` item. The explicit element index preserves the descriptor's
+order without relying on STAR loop row order. Olex2 includes these data items
+when the CIF is saved. To calculate them manually, run
+`spy.RINSE.calculate()` in Olex2's main console. The hash is printed in the
+console and displayed in the RINSE plugin panel.
 
 ## Development status
 
