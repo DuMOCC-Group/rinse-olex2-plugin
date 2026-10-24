@@ -8,4 +8,7 @@ rinse{
       .type = str
       .help = The tool before which the RINSE GUI shall appear.
     }
+  add_to_cif = True
+    .type = bool
+    .help = Add RINSE descriptor, parameters, and hash to the CIF.
 }

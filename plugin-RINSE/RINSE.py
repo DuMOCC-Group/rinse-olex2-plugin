@@ -60,6 +60,7 @@ class RINSE(PT):
     self._rinse_update_notice = None
     OV.registerFunction(self.check_environment, True, "RINSE")
     OV.registerFunction(self.calculate, True, "RINSE")
+    OV.registerFunction(self.set_cif_metadata_enabled, True, "RINSE")
     self._register_calculation_hooks()
     try:
       self._get_rinse_module()
@@ -273,6 +274,60 @@ class RINSE(PT):
       cif_loop.add_row(row)
     cif_block.add_loop(cif_loop)
 
+  @staticmethod
+  def _remove_cif_metadata(cif_block):
+    rinse_loop_items = (
+      '_rinse_elements.index',
+      '_rinse_elements.value',
+      '_rinse_parameters.name',
+      '_rinse_parameters.value',
+    )
+    for cif_loop in list(cif_block.loops.values()):
+      if any(item in cif_loop for item in rinse_loop_items):
+        for item in list(cif_loop.keys()):
+          del cif_block[item]
+
+    for item in ('_rinse_descriptor', '_rinse_hash'):
+      if item in cif_block:
+        del cif_block[item]
+
+  @staticmethod
+  def _cif_metadata_enabled():
+    enabled = OV.GetParam('rinse.add_to_cif')
+    if isinstance(enabled, str):
+      return enabled.strip().lower() in ('true', '1', 'yes', 'on')
+    return bool(enabled)
+
+  def set_cif_metadata_enabled(self, enabled):
+    """Update whether RINSE metadata is written to the active CIF."""
+    if isinstance(enabled, str):
+      enabled = enabled.strip().lower() in ('true', '1', 'yes', 'on')
+    else:
+      enabled = bool(enabled)
+    OV.SetParam('rinse.add_to_cif', enabled)
+
+    if enabled:
+      if olx.IsFileLoaded() == 'true':
+        self._calculate_automatically()
+      else:
+        OV.SetVar(
+          'RINSE_status',
+          'Load a structure to calculate its RINSE hash',
+        )
+        OV.UpdateHtml()
+      return
+
+    if olx.IsFileLoaded() == 'true':
+      from CifInfo import CifTools
+
+      cif_tools = CifTools()
+      self._remove_cif_metadata(cif_tools.cif_block)
+    OV.SetVar(
+      'RINSE_status',
+      'RINSE data will not be included when the CIF is saved',
+    )
+    OV.UpdateHtml()
+
   def check_environment(self):
     """Print the Python and RINSE dependency versions used by Olex2."""
     lines = [f"Olex2 Python: {sys.version.split()[0]}"]
@@ -305,41 +360,45 @@ class RINSE(PT):
     from CifInfo import CifTools
 
     cif_tools = CifTools()
-    if '_rinse_descriptor' in cif_tools.cif_block:
-      del cif_tools.cif_block['_rinse_descriptor']
+    if self._cif_metadata_enabled():
+      descriptor_values = values.reshape(-1)
+      self._replace_cif_loop(
+        cif_tools.cif_block,
+        ('_rinse_elements.index', '_rinse_elements.value'),
+        [
+          (str(index), repr(float(value)))
+          for index, value in enumerate(descriptor_values, start=1)
+        ],
+      )
 
-    descriptor_values = values.reshape(-1)
-    self._replace_cif_loop(
-      cif_tools.cif_block,
-      ('_rinse_elements.index', '_rinse_elements.value'),
-      [
-        (str(index), repr(float(value)))
-        for index, value in enumerate(descriptor_values, start=1)
-      ],
-    )
-
-    rinse_params = [
-      (field.name, getattr(params, field.name))
-      for field in fields(params)
-    ]
-    rinse_params.extend((
-      ('descriptor_version', rinse_descriptor.__version__),
-      ('hash_words', hash_words),
-    ))
-    self._replace_cif_loop(
-      cif_tools.cif_block,
-      ('_rinse_parameters.name', '_rinse_parameters.value'),
-      [
-        (name, json.dumps(value, allow_nan=False))
-        for name, value in rinse_params
-      ],
-    )
-    cif_tools.cif_block['_rinse_hash'] = str(rinse_hash)
+      rinse_params = [
+        (field.name, getattr(params, field.name))
+        for field in fields(params)
+      ]
+      rinse_params.extend((
+        ('descriptor_version', rinse_descriptor.__version__),
+        ('hash_words', hash_words),
+      ))
+      self._replace_cif_loop(
+        cif_tools.cif_block,
+        ('_rinse_parameters.name', '_rinse_parameters.value'),
+        [
+          (name, json.dumps(value, allow_nan=False))
+          for name, value in rinse_params
+        ],
+      )
+      cif_tools.cif_block['_rinse_hash'] = str(rinse_hash)
+      status = (
+        "Descriptor, parameters, and hash will be included when the CIF is saved"
+      )
+    else:
+      self._remove_cif_metadata(cif_tools.cif_block)
+      status = "RINSE data will not be included when the CIF is saved"
 
     OV.SetVar('RINSE_hash', rinse_hash)
     OV.SetVar(
       'RINSE_status',
-      "Descriptor, parameters, and hash will be included when the CIF is saved"
+      status
       + (
         " (%s)" % self._rinse_update_notice
         if self._rinse_update_notice

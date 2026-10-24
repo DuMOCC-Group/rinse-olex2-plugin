@@ -16,6 +16,17 @@
       <tr>
         <td><font color='#666666'>$GetVar(RINSE_status)</font></td>
       </tr>
+      <tr>
+        <td>
+          $+
+          html.Snippet("gui/snippets/input-checkbox-plain",
+          "name=RINSE_add_to_cif",
+          "checked=spy.GetParam('rinse.add_to_cif')",
+          "onclick=spy.RINSE.set_cif_metadata_enabled(html.GetState('~name~'))")
+          $-
+          Include RINSE information in the CIF
+        </td>
+      </tr>
     </table>
   </td>
 <!-- #include row_table_off gui/blocks/row_table_off.htm;1; -->

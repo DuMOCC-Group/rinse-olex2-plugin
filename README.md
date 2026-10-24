@@ -61,9 +61,10 @@ loaded or refined. It stores them in the active CIF metadata as a
 `_rinse_elements` loop (`_rinse_elements.index` and
 `_rinse_elements.value`), a `_rinse_parameters` loop (JSON-encoded parameter
 names and values, including the descriptor version and hash word count), and
-the `_rinse_hash` item. The explicit element index preserves the descriptor's
-order without relying on STAR loop row order. Olex2 includes these data items
-when the CIF is saved. To calculate them manually, run
+the `_rinse_hash` item. Use the **Include RINSE information in the CIF**
+checkbox in the plugin panel to enable or disable adding these data items;
+the hash remains calculated and displayed either way. The checkbox is enabled
+by default. To calculate the hash manually, run
 `spy.RINSE.calculate()` in Olex2's main console. The hash is printed in the
 console and displayed in the RINSE plugin panel.
 
