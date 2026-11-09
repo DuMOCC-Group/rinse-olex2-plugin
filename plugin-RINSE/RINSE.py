@@ -257,24 +257,6 @@ class RINSE(PT):
     importlib.invalidate_caches()
 
   @staticmethod
-  def _replace_cif_loop(cif_block, header, rows):
-    from iotbx.cif import model
-
-    for cif_loop in list(cif_block.loops.values()):
-      if any(item in cif_loop for item in header):
-        for item in list(cif_loop.keys()):
-          del cif_block[item]
-
-    for item in header:
-      if item in cif_block:
-        del cif_block[item]
-
-    cif_loop = model.loop(header=header)
-    for row in rows:
-      cif_loop.add_row(row)
-    cif_block.add_loop(cif_loop)
-
-  @staticmethod
   def _remove_cif_metadata(cif_block):
     rinse_loop_items = (
       '_rinse_elements.index',
@@ -283,12 +265,22 @@ class RINSE(PT):
       '_rinse_parameters.value',
     )
     for cif_loop in list(cif_block.loops.values()):
-      if any(item in cif_loop for item in rinse_loop_items):
+      if any(
+        item in cif_loop
+        for item in rinse_loop_items
+      ) or any(
+        item.startswith('_rinse_descriptor_')
+        for item in cif_loop.keys()
+      ):
         for item in list(cif_loop.keys()):
           del cif_block[item]
 
-    for item in ('_rinse_descriptor', '_rinse_hash'):
-      if item in cif_block:
+    for item in list(cif_block.keys()):
+      if (
+        item in ('_rinse_descriptor', '_rinse_hash')
+        or item.startswith('_rinse_descriptor_')
+        or item in rinse_loop_items
+      ):
         del cif_block[item]
 
   @staticmethod
@@ -361,33 +353,30 @@ class RINSE(PT):
 
     cif_tools = CifTools()
     if self._cif_metadata_enabled():
-      descriptor_values = values.reshape(-1)
-      self._replace_cif_loop(
-        cif_tools.cif_block,
-        ('_rinse_elements.index', '_rinse_elements.value'),
-        [
-          (str(index), repr(float(value)))
-          for index, value in enumerate(descriptor_values, start=1)
-        ],
-      )
-
       rinse_params = [
         (field.name, getattr(params, field.name))
         for field in fields(params)
       ]
-      rinse_params.extend((
-        ('descriptor_version', rinse_descriptor.__version__),
-        ('hash_words', hash_words),
-      ))
-      self._replace_cif_loop(
-        cif_tools.cif_block,
-        ('_rinse_parameters.name', '_rinse_parameters.value'),
-        [
-          (name, json.dumps(value, allow_nan=False))
-          for name, value in rinse_params
-        ],
+      self._remove_cif_metadata(cif_tools.cif_block)
+      cif_block = cif_tools.cif_block
+      cif_block['_rinse_descriptor_values'] = json.dumps(
+        values.tolist(),
+        allow_nan=False,
       )
-      cif_tools.cif_block['_rinse_hash'] = str(rinse_hash)
+      for name, value in rinse_params:
+        cif_block['_rinse_descriptor_%s' % name] = json.dumps(
+          value,
+          allow_nan=False,
+        )
+      cif_block['_rinse_descriptor_version'] = json.dumps(
+        rinse_descriptor.__version__,
+        allow_nan=False,
+      )
+      cif_block['_rinse_descriptor_hash_words'] = json.dumps(
+        hash_words,
+        allow_nan=False,
+      )
+      cif_block['_rinse_descriptor_hash'] = str(rinse_hash)
       status = (
         "Descriptor, parameters, and hash will be included when the CIF is saved"
       )
